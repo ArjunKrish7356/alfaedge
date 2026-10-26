@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "outline": {
+      "type": "http",
+      "url": "https://docs.alfaedge.org/mcp",
+      "headers": {
+        "Authorization": "Bearer ${user_config.outline_api_key}"
+      }
+    }
+  }
+}
