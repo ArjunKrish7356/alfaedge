@@ -101,14 +101,5 @@ fi
 
 # ── 6. Done ─────────────────────────────────────────────────────
 step "6/6  Done 🎉"
-echo "  Try in Claude Code:  /alfaedge:kb-find <topic>"
-# Claude can't run on a reopened /dev/tty (macOS kqueue EINVAL), so only
-# launch when stdin is already the terminal (bash setup.sh, not curl | bash).
-if [ -t 0 ]; then
-  case "$(ask 'Start Claude now? [Y/n]')" in
-    [nN]*) echo "  Run 'claude' when ready." ;;
-    *) exec claude ;;
-  esac
-else
-  echo "  Run 'claude' to start."
-fi
+echo "  You can start Claude Code now:  claude"
+echo "  Try:  /alfaedge:kb-find <topic>"
