@@ -12,7 +12,7 @@ AlfaEdge team tools for Claude Code: search and write docs in the Outline knowle
 **Before you start:**
 - [Claude Code](https://claude.com/claude-code) installed (`claude` works in your terminal)
 - `curl` and `python3`
-- An Outline API key: https://docs.alfaedge.org → Settings → API
+- An Outline API key: https://docs.alfaedge.org → profile image (bottom-left) → Preferences → API & Access → New API key (top-right)
 
 **Run in your terminal:**
 

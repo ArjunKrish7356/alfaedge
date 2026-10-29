@@ -64,10 +64,31 @@ valid_key() {
   [ "$code" = "200" ]
 }
 
-echo "  Create one at: $OUTLINE → Settings → API"
+# Read a secret from the terminal, echoing * per char so pasting shows feedback.
+read_secret() {
+  local c s=""
+  printf '%s' "$1" > "$TTY"
+  while IFS= read -r -s -n1 c < "$TTY"; do
+    case "$c" in
+      "") break ;;                                    # Enter
+      $'\177'|$'\b')                                  # Backspace
+        if [ -n "$s" ]; then s="${s%?}"; printf '\b \b' > "$TTY"; fi ;;
+      *) s+="$c"; printf '*' > "$TTY" ;;
+    esac
+  done
+  printf '\n' > "$TTY"
+  KEY="$s"
+}
+
+echo "  How to create a key:"
+echo "    1. Open $OUTLINE"
+echo "    2. Bottom-left: click your profile image"
+echo "    3. Go to Preferences → API & Access"
+echo "    4. Top-right: click 'New API key' and copy it"
+echo
 KEY_OK=0
 for try in 1 2 3; do
-  read -r -s -p "  Paste key (hidden): " KEY < "$TTY"; echo
+  read_secret "  Paste key, then press Enter: "
   KEY="$(printf '%s' "$KEY" | tr -d '[:space:]')"
   KEY="${KEY#Bearer}"   # people often paste "Bearer ol_api_…"
   if [ -z "$KEY" ]; then warn "empty key (try $try/3)"; continue; fi
@@ -75,7 +96,7 @@ for try in 1 2 3; do
   if valid_key "$KEY"; then ok "key works with $OUTLINE"; KEY_OK=1; break; fi
   warn "Outline rejected this key (try $try/3)"
 done
-[ "$KEY_OK" = 1 ] || fail "no valid key. Check it at $OUTLINE → Settings → API and re-run."
+[ "$KEY_OK" = 1 ] || fail "no valid key. Check it at $OUTLINE → profile image → Preferences → API & Access, then re-run."
 # Same storage as /plugin configure: secure store (macOS Keychain), not settings.json.
 python3 -c 'import json,sys; print(json.dumps({"outline_api_key": sys.argv[1]}))' "$KEY" \
   | claude plugin configure "$PLUGIN" --values-stdin >/dev/null \

@@ -8,7 +8,7 @@
     "outline_api_key": {
       "type": "string",
       "title": "Outline API key",
-      "description": "Paste only the key (starts with ol_api_). Do NOT add \"Bearer\". Create one at https://docs.alfaedge.org → Settings → API",
+      "description": "Paste only the key (starts with ol_api_). Do NOT add \"Bearer\". (to make one: https://docs.alfaedge.org → profile image, bottom-left → Preferences → API & Access → New API key, top-right)",
       "required": true,
       "sensitive": true
     }
