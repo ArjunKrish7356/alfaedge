@@ -12,7 +12,8 @@ PLUGIN="alfaedge@alfaedge"
 OUTLINE="https://docs.alfaedge.org"
 SERVER="plugin:alfaedge:outline"
 
-# stdin is the script itself under `curl | bash`, so read answers from the terminal.
+# stdin is the script itself under `curl | bash`: read answers from the terminal,
+# and give every claude call </dev/null so it can't swallow the rest of the script.
 TTY=/dev/tty
 
 ok()   { printf '  \033[32m✔\033[0m %s\n' "$*"; }
@@ -29,12 +30,12 @@ ok "claude, curl, python3 found"
 
 # ── 2. Install / update plugin ──────────────────────────────────
 step "2/6  Installing plugin"
-if claude plugin list 2>/dev/null | grep -q "$PLUGIN"; then
-  claude plugin marketplace update alfaedge >/dev/null 2>&1 || true
-  claude plugin update "$PLUGIN" >/dev/null 2>&1 || true
+if claude plugin list </dev/null 2>/dev/null | grep -q "$PLUGIN"; then
+  claude plugin marketplace update alfaedge </dev/null >/dev/null 2>&1 || true
+  claude plugin update "$PLUGIN" </dev/null >/dev/null 2>&1 || true
   ok "already installed — updated to latest"
 else
-  claude plugin install alfaedge --marketplace "$SOURCE" -y >/dev/null \
+  claude plugin install alfaedge --marketplace "$SOURCE" -y </dev/null >/dev/null \
     || fail "install failed. Run: claude plugin install alfaedge --marketplace $SOURCE"
   ok "installed $PLUGIN"
 fi
@@ -71,7 +72,7 @@ ok "key saved to Claude's secure storage"
 # ── 4. MCP connection ───────────────────────────────────────────
 step "4/6  Checking MCP connection"
 # Run outside any repo so a project .mcp.json can't interfere.
-STATUS="$(cd "$HOME" && claude mcp list 2>&1 | grep "$SERVER" || true)"
+STATUS="$(cd "$HOME" && claude mcp list </dev/null 2>&1 | grep "$SERVER" || true)"
 if echo "$STATUS" | grep -q "Connected"; then
   ok "$SERVER connected"
 else
@@ -82,7 +83,7 @@ fi
 step "5/6  Testing a tool call (takes a few seconds)"
 TOOL="mcp__plugin_alfaedge_outline__list_collections"
 OUT="$(cd "$HOME" && claude -p "Call $TOOL once. Reply with only the number of collections, or FAIL if it errors." \
-  --allowedTools "$TOOL" 2>&1 || true)"
+  --allowedTools "$TOOL" </dev/null 2>&1 || true)"
 if [[ "$OUT" =~ ^[[:space:]]*[0-9]+[[:space:]]*$ ]]; then
   ok "list_collections works ($(echo "$OUT" | tr -d '[:space:]') collections visible)"
 else
