@@ -28,6 +28,18 @@ for bin in claude curl python3; do
 done
 ok "claude, curl, python3 found"
 
+# Saving the key needs `claude plugin configure --values-stdin` (newer Claude Code).
+if ! claude plugin configure --help </dev/null 2>/dev/null | grep -q -- "--values-stdin"; then
+  printf '  \033[31m✘\033[0m Claude Code is too old (%s).\n' "$(claude --version </dev/null 2>/dev/null | awk '{print $1}')"
+  echo "    Update it, then re-run this script:"
+  echo
+  echo "      claude update"
+  echo
+  echo "    If that fails (npm install), use:  npm install -g @anthropic-ai/claude-code@latest"
+  exit 1
+fi
+ok "Claude Code $(claude --version </dev/null 2>/dev/null | awk '{print $1}') is up to date"
+
 # ── 2. Install / update plugin ──────────────────────────────────
 step "2/6  Installing plugin"
 if claude plugin list </dev/null 2>/dev/null | grep -q "$PLUGIN"; then
@@ -35,8 +47,10 @@ if claude plugin list </dev/null 2>/dev/null | grep -q "$PLUGIN"; then
   claude plugin update "$PLUGIN" </dev/null >/dev/null 2>&1 || true
   ok "already installed — updated to latest"
 else
-  claude plugin install alfaedge --marketplace "$SOURCE" -y </dev/null >/dev/null \
-    || fail "install failed. Run: claude plugin install alfaedge --marketplace $SOURCE"
+  # Two steps instead of `install --marketplace`, which older versions lack.
+  claude plugin marketplace add "$SOURCE" </dev/null >/dev/null 2>&1 || true
+  claude plugin install "$PLUGIN" </dev/null >/dev/null \
+    || fail "install failed. Run: claude plugin marketplace add $SOURCE && claude plugin install $PLUGIN"
   ok "installed $PLUGIN"
 fi
 
