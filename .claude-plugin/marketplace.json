@@ -12,7 +12,7 @@
       "name": "alfaedge",
       "source": "./",
       "description": "Search and write docs in the Outline knowledge base",
-      "version": "0.1.0"
+      "version": "0.1.1"
     }
   ]
 }

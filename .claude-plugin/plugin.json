@@ -1,14 +1,14 @@
 {
   "name": "alfaedge",
   "displayName": "AlfaEdge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AlfaEdge team tools: search and write docs in the Outline knowledge base",
   "author": { "name": "Arjun Krishna" },
   "userConfig": {
     "outline_api_key": {
       "type": "string",
       "title": "Outline API key",
-      "description": "Create one at https://docs.alfaedge.org → Settings → API",
+      "description": "Paste only the key (starts with ol_api_). Do NOT add \"Bearer\". Create one at https://docs.alfaedge.org → Settings → API",
       "required": true,
       "sensitive": true
     }
