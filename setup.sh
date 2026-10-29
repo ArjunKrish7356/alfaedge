@@ -19,7 +19,6 @@ ok()   { printf '  \033[32m✔\033[0m %s\n' "$*"; }
 warn() { printf '  \033[33m!\033[0m %s\n' "$*"; }
 fail() { printf '  \033[31m✘\033[0m %s\n' "$*"; exit 1; }
 step() { printf '\n\033[1m%s\033[0m\n' "$*"; }
-ask()  { local a; read -r -p "  $1 " a < "$TTY"; printf '%s' "$a"; }
 
 # ── 1. Requirements ─────────────────────────────────────────────
 step "1/6  Checking requirements"
@@ -42,18 +41,6 @@ fi
 
 # ── 3. API key ──────────────────────────────────────────────────
 step "3/6  Outline API key"
-NEED_KEY=1
-key_saved() {
-  claude plugin configure "$PLUGIN" --json 2>/dev/null | python3 -c \
-    'import json,sys; sys.exit(0 if "outline_api_key" in json.load(sys.stdin).get("configured", []) else 1)'
-}
-if key_saved; then
-  case "$(ask 'A key is already saved. Replace it? [y/N]')" in
-    [yY]*) ;;
-    *) NEED_KEY=0; ok "keeping saved key" ;;
-  esac
-fi
-
 valid_key() {
   # Header goes in via stdin so the key never shows up in `ps`.
   local code
@@ -62,25 +49,24 @@ valid_key() {
   [ "$code" = "200" ]
 }
 
-if [ "$NEED_KEY" = 1 ]; then
-  echo "  Create one at: $OUTLINE → Settings → API"
-  for try in 1 2 3; do
-    read -r -s -p "  Paste key (hidden): " KEY < "$TTY"; echo
-    KEY="$(printf '%s' "$KEY" | tr -d '[:space:]')"
-    KEY="${KEY#Bearer}"   # people often paste "Bearer ol_api_…"
-    [ -z "$KEY" ] && { warn "empty key"; continue; }
-    [[ "$KEY" == ol_api_* ]] || warn "key usually starts with ol_api_"
-    if valid_key "$KEY"; then ok "key works with $OUTLINE"; break; fi
-    warn "Outline rejected this key (try $try/3)"
-    [ "$try" = 3 ] && fail "no valid key. Check it at $OUTLINE → Settings → API and re-run."
-  done
-  # Same storage as /plugin configure: secure store (macOS Keychain), not settings.json.
-  python3 -c 'import json,sys; print(json.dumps({"outline_api_key": sys.argv[1]}))' "$KEY" \
-    | claude plugin configure "$PLUGIN" --values-stdin >/dev/null \
-    || fail "could not save key. Run /plugin configure $PLUGIN inside Claude Code."
-  unset KEY
-  ok "key saved to Claude's secure storage"
-fi
+echo "  Create one at: $OUTLINE → Settings → API"
+KEY_OK=0
+for try in 1 2 3; do
+  read -r -s -p "  Paste key (hidden): " KEY < "$TTY"; echo
+  KEY="$(printf '%s' "$KEY" | tr -d '[:space:]')"
+  KEY="${KEY#Bearer}"   # people often paste "Bearer ol_api_…"
+  if [ -z "$KEY" ]; then warn "empty key (try $try/3)"; continue; fi
+  [[ "$KEY" == ol_api_* ]] || warn "key usually starts with ol_api_"
+  if valid_key "$KEY"; then ok "key works with $OUTLINE"; KEY_OK=1; break; fi
+  warn "Outline rejected this key (try $try/3)"
+done
+[ "$KEY_OK" = 1 ] || fail "no valid key. Check it at $OUTLINE → Settings → API and re-run."
+# Same storage as /plugin configure: secure store (macOS Keychain), not settings.json.
+python3 -c 'import json,sys; print(json.dumps({"outline_api_key": sys.argv[1]}))' "$KEY" \
+  | claude plugin configure "$PLUGIN" --values-stdin >/dev/null \
+  || fail "could not save key. Run /plugin configure $PLUGIN inside Claude Code."
+unset KEY
+ok "key saved to Claude's secure storage"
 
 # ── 4. MCP connection ───────────────────────────────────────────
 step "4/6  Checking MCP connection"

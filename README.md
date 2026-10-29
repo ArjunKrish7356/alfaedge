@@ -34,7 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/ArjunKrish7356/alfaedge/master/setu
 ```
 
 - Paste only the key (starts with `ol_api_`). If you paste `Bearer …`, the script strips it.
-- Safe to re-run: it updates the plugin and asks before replacing a saved key.
+- Safe to re-run: it updates the plugin and asks for the key again (new key replaces the old one).
 
 ### Manual install (alternative)
 
