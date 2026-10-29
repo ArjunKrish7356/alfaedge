@@ -1,9 +1,8 @@
 ---
 name: kb-write
-description: Write a short doc into the AlfaEdge Outline Knowledge Base collection, after user confirmation.
+description: Write a short doc into the AlfaEdge Outline Knowledge Base. When you finish something worth keeping for the team — a fixed tricky bug, setup or integration steps, a gotcha, a non-obvious config — ASK the user once, at the end of the task, "Want me to add this to the KB?". Invoke this skill ONLY after the user explicitly says yes. Never invoke it on your own.
 argument-hint: "[topic]"
-disable-model-invocation: true
-model: sonnet
+model: haiku
 allowed-tools: mcp__plugin_alfaedge_outline__list_collection_documents mcp__plugin_alfaedge_outline__list_documents mcp__plugin_alfaedge_outline__fetch
 ---
 
@@ -12,6 +11,8 @@ allowed-tools: mcp__plugin_alfaedge_outline__list_collection_documents mcp__plug
 Topic: $ARGUMENTS (if empty, use what was just built or discussed in this conversation)
 
 ## Hard rules
+
+- Run only if the user explicitly asked for it, or said yes to "add this to the KB?". Otherwise stop now.
 
 - Target is ALWAYS the **Knowledge Base** collection: `collectionId = 6b520a26-35eb-4afa-b4d8-dd947d85007a`.
   - Pass this `collectionId` on EVERY `create_document` call, including folders and nested docs.
@@ -60,7 +61,8 @@ Topic: $ARGUMENTS (if empty, use what was just built or discussed in this conver
 
 ## Auth errors
 
-If the Outline tools are missing or return 401, tell the user:
-1. Create an API key: https://docs.alfaedge.org → Settings → API
-2. `/plugin` → alfaedge → Configure → paste the key
-3. `/reload-plugins`
+If the Outline tools are missing or return 401, tell the user to re-run setup:
+
+```
+curl -fsSL https://raw.githubusercontent.com/ArjunKrish7356/alfaedge/master/setup.sh | bash
+```
