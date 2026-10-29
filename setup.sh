@@ -43,7 +43,11 @@ fi
 # ── 3. API key ──────────────────────────────────────────────────
 step "3/6  Outline API key"
 NEED_KEY=1
-if claude plugin configure "$PLUGIN" 2>/dev/null | grep -q "outline_api_key.*set)"; then
+key_saved() {
+  claude plugin configure "$PLUGIN" --json 2>/dev/null | python3 -c \
+    'import json,sys; sys.exit(0 if "outline_api_key" in json.load(sys.stdin).get("configured", []) else 1)'
+}
+if key_saved; then
   case "$(ask 'A key is already saved. Replace it? [y/N]')" in
     [yY]*) ;;
     *) NEED_KEY=0; ok "keeping saved key" ;;
